@@ -1,12 +1,35 @@
 require('dotenv').config()
+const axios = require('axios')
 const express = require('express')
 const router = express.Router()
 const Track = require('../models/track')
 const Isrc = require('../models/isrc')
+const track = require('../models/track')
 
 // Getting all tracks
 router.get('/', async (req, res) => {
-    res.send('HELLO WORLD')
+    try {
+        const tracks = await Track.find()
+        res.json(tracks)
+      } catch (err) {
+        res.status(500).json({ message: err.message })
+      }
+  })
+
+  // Getting tracks by artist
+router.get('/artist', async (req, res) => {
+    try {
+        const tracks = await Track.find()
+        let tracksWithArtist = []
+        tracks.forEach(function(track) {
+            if (track.artist === req.body.artist) {
+                tracksWithArtist.push(track)
+            }
+        })
+        res.json(tracksWithArtist)
+      } catch (err) {
+        res.status(500).json({ message: err.message })
+      }
   })
 
 // Creating ISRC Entry
@@ -28,8 +51,16 @@ router.post('/isrc', async (req, res) => {
         let obj = await data.json()
 
         console.log('ARTIST NAME -', obj.tracks.items[0].artists[0].name)
+        let artistName = obj.tracks.items[0].artists[0].name
+
         console.log('ALBUM NAME -', obj.tracks.items[0].name)
+        let albumName = obj.tracks.items[0].name
+
         console.log('URI -', obj.tracks.items[0].artists[0].uri)
+        let uriName = obj.tracks.items[0].artists[0].uri
+
+        createNewTrack(artistName,albumName,uriName)
+
 
       } catch (err) {
         res.status(400).json({ message: err.message })
@@ -52,5 +83,22 @@ router.post('/', async (req, res) => {
       }
 
   })
+
+
+  function createNewTrack(artist, title, uri) {
+    console.log('Working')
+    axios.post('http://localhost:3000/tracks', {
+        image_uri: `${uri}`,
+        title: `${title}`,
+        artist: `${artist}`
+      })
+      .then(function (response) {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
 
 module.exports = router
