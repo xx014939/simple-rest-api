@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
       }
   })
 
-  // Getting tracks by artist
+// Getting tracks by artist
 router.get('/artist', async (req, res) => {
     try {
         const tracks = await Track.find()
@@ -27,6 +27,23 @@ router.get('/artist', async (req, res) => {
             }
         })
         res.json(tracksWithArtist)
+      } catch (err) {
+        res.status(500).json({ message: err.message })
+      }
+  })
+
+// Getting tracks by ISRC
+router.get('/isrc', async (req, res) => {
+    try {
+        const tracks = await Track.find()
+        let isrcTrack
+        tracks.forEach(function(track) {
+            if (track.isrc === req.body.isrc) {
+                isrcTrack = track
+                res.json(isrcTrack)
+            }
+        })
+        res.json('Not Found')
       } catch (err) {
         res.status(500).json({ message: err.message })
       }
@@ -59,7 +76,9 @@ router.post('/isrc', async (req, res) => {
         console.log('URI -', obj.tracks.items[0].artists[0].uri)
         let uriName = obj.tracks.items[0].artists[0].uri
 
-        createNewTrack(artistName,albumName,uriName)
+        let isrcName = newIsrc.isrc
+
+        createNewTrack(artistName,albumName,uriName, isrcName)
 
 
       } catch (err) {
@@ -73,7 +92,9 @@ router.post('/', async (req, res) => {
     const track = new Track({
         image_uri: req.body.image_uri,
         title: req.body.title,
-        artist: req.body.artist
+        artist: req.body.artist,
+        isrc: req.body.isrc
+
       })
       try {
         const newTrack = await track.save()
@@ -85,12 +106,13 @@ router.post('/', async (req, res) => {
   })
 
 
-  function createNewTrack(artist, title, uri) {
+  function createNewTrack(artist, title, uri, isrc) {
     console.log('Working')
     axios.post('http://localhost:3000/tracks', {
         image_uri: `${uri}`,
         title: `${title}`,
-        artist: `${artist}`
+        artist: `${artist}`,
+        isrc: `${isrc}`
       })
       .then(function (response) {
         console.log(response.data);

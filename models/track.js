@@ -15,6 +15,11 @@ const trackSchema = new mongoose.Schema({
     artist: {
         type: String,
         required: true
+    },
+    // ISRC  
+    isrc: {
+        type: String,
+        required: true
     }
 })
 
