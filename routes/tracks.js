@@ -21,18 +21,19 @@ router.post('/isrc', async (req, res) => {
         res.status(201).json(newIsrc)
 
         // Use ISRC to query Spotify
-        fetch(`https://api.spotify.com/v1/search?type=track&q=isrc:${newIsrc.isrc}`, {
+        let data = await fetch(`https://api.spotify.com/v1/search?type=track&q=isrc:${newIsrc.isrc}`, {
         headers: {'Authorization': 'Bearer ' + process.env.SPOTIFY_BEARER}
         })
-        .then(resp => resp.json())
-        .then(json => console.log(JSON.stringify(json)))
-        console.log('Query Spotify', newIsrc.isrc, process.env.SPOTIFY_BEARER)
+
+        let obj = await data.json()
+
+        console.log('ARTIST NAME -', obj.tracks.items[0].artists[0].name)
+        console.log('ALBUM NAME -', obj.tracks.items[0].name)
+        console.log('URI -', obj.tracks.items[0].artists[0].uri)
 
       } catch (err) {
         res.status(400).json({ message: err.message })
       }
-
-    // Save result
 })
 
 
